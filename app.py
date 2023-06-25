@@ -2,6 +2,7 @@
 import os
 from flask import  Flask, request, redirect, url_for, render_template
 from werkzeug.utils import secure_filename
+# import additional libraries below
 import cv2
 import numpy as np
 
@@ -12,39 +13,36 @@ app = Flask(__name__)
 def load_form():
     return render_template('upload.html')
 
-
 # Function to upload image and redirect to new webpage
 @app.route('/gray', methods=['POST'])
 def upload_image():
     file = request.files['file']
     filename = secure_filename(file.filename)
-
-    file_data = make_grayscale(file.read())
-    with open(os.path.join('static/', filename),
-              'wb') as f:
+    # write the read and write function on image below 
+    file_data = make_greyscale(file.read())
+    with open(os.path.join('static/', filename), 'wb') as f:
         f.write(file_data)
+        # ends here
 
     display_message = 'Image successfully uploaded and displayed below'
     return render_template('upload.html', filename=filename, message = display_message)
 
 
+# Write the make_grayscale() function below
+def make_greyscale(input_img):
+    input_array = np.fromstring(input_img, dtype='uint8')
+    print('input array = ', input_array)
 
-def make_grayscale(input_image):
+    decode_array = cv2.imdecode(input_array, cv2.IMREAD_UNCHANGED)
+    print('decoded array = ', decode_array)
 
-    image_array = np.fromstring(input_image, dtype='uint8')
-    print('Image Array:',image_array)
-
-    # decode the array into an image
-    decode_array_to_img = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
-    print('Decode values of Image:', decode_array_to_img)
-
-    # Make grayscale
-    converted_gray_img = cv2.cvtColor(decode_array_to_img, cv2.COLOR_RGB2GRAY)
-    status, output_image = cv2.imencode('.PNG', converted_gray_img)
-    print('Status:',status)
+    gray_image = cv2.cvtColor(decode_array, cv2.COLOR_RGB2GRAY)
+    result, output_image = cv2.imencode('.PNG', gray_image)
+    print('result = ', result)
 
     return output_image
 
+# make_grayscale() function ends above
 
 @app.route('/display/<filename>')
 def display_image(filename):
